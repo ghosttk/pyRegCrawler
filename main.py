@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import urllib.request
 from urllib import error, parse
+import string
 import re
 
 def parseHtml(url, BodyPattern, UrlPattern):
-     url = urllib.parse.quote(url, safe='/:')
+     url = urllib.parse.quote(url, safe=string.printable)
      try:
          res = urllib.request.urlopen(url)
      except urllib.error.URLError as e:
@@ -12,6 +13,7 @@ def parseHtml(url, BodyPattern, UrlPattern):
      Content = res.read().decode('gb2312', 'ignore')
      #print(Content)
      body = re.findall(BodyPattern, Content, re.S)
+     body = re.findall('[\u4e00-\u9fa5]+', body[0])
      nextLink = re.search(UrlPattern, Content, re.S).group(1)
      if nextLink != '':
          BaseUrl = re.match('https*://.*?/', url).group()
@@ -24,6 +26,5 @@ if __name__ == "__main__":
      UrlPattern = '<div class=zw_page1>.*?<a href=\"(.*?)\">'
      body, nextLink = parseHtml(url, BodyPattern, UrlPattern)
      while nextLink !='':
-         print(nextLink)
          body, nextLink = parseHtml(nextLink, BodyPattern, UrlPattern)
          print(body)
