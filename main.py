@@ -10,7 +10,9 @@ def parseHtml(url, BodyPattern, UrlPattern):
      body = re.findall(BodyPattern, Content, re.S)
      nextLink = re.search(UrlPattern, Content, re.S).group(1)
      if nextLink != '':
-         nextLink = re.sub(r'/\d*?.htm$', '/'+nextLink, url)
+         BaseUrl = re.match('https*://.*?/', url).group()
+         nextLink = re.sub('\.\./\.\./', '',  nextLink)
+         nextLink = BaseUrl + nextLink
      return body, nextLink
 if __name__ == "__main__":
      url = 'http://www.jokeji.cn/jokehtml/mj/202101241746485.htm'
@@ -20,5 +22,4 @@ if __name__ == "__main__":
      while nextLink !='':
          print(nextLink)
          body, nextLink = parseHtml(nextLink, BodyPattern, UrlPattern)
-         #print(body)
-
+         print(body)
