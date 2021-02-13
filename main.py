@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 import urllib.request
+from urllib import error, parse
 import re
 
 def parseHtml(url, BodyPattern, UrlPattern):
-     #url = urllib.request.quote(url)
-     res = urllib.request.urlopen(url)
+     url = urllib.parse.quote(url, safe='/:')
+     try:
+         res = urllib.request.urlopen(url)
+     except urllib.error.URLError as e:
+         print(e)
      Content = res.read().decode('gb2312', 'ignore')
      #print(Content)
      body = re.findall(BodyPattern, Content, re.S)
