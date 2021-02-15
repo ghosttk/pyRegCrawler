@@ -7,24 +7,24 @@ import string, re, configparser, os
 class RegParser():
     def __init__(self, baseUrl, count):
         self.baseUrl = baseUrl
-        self.fo = open(baseUrl, 'a+')
         self.count =count
         self.strToWrite = []
         self.cp = configparser.ConfigParser()
         curr_dir = os.path.dirname(os.path.realpath(__file__))
         config_file = curr_dir + os.sep + "params.conf"
-        self.cp = configparser.ConfigParser()
         self.cp.read(config_file)
         urlToQoute = self.cp.get(self.baseUrl, 'url')
+        filename = re.search('\/(\d+)\.htm', urlToQoute).group(1)
+        self.fo = open(filename+'.txt', 'a+')
         self.url = urllib.parse.quote(urlToQoute, safe=string.printable)
         self.BodyPattern = self.cp.get(self.baseUrl, 'BodyPattern')
         self.UrlPattern = self.cp.get(self.baseUrl, 'UrlPattern')
         self.trunkPattern = self.cp.get(self.baseUrl, 'trunkPattern')
+        self.nextLink = self.cp.get(self.baseUrl, 'url')
     def __del__(self):
-         self.cp.set(self.baseUrl, 'url', self.nextLink)
-         self.fo.writelines(self.strToWrite)
-         self.fo.close()
-         self.cp.set(self.baseUrl, 'url', self.nextLink)
+        self.fo.writelines(self.strToWrite)
+        self.fo.close()
+        self.cp.set(self.baseUrl, 'url', self.nextLink)
     def parseBaseUrl(self, url):
         baseUrl = re.match('https?://.*?/', url).group()
         return baseUrl
@@ -57,11 +57,3 @@ if __name__ == "__main__":
          bodyString, nextLink = myRegParser.parseHtml()
          myRegParser.strToWrite.append(bodyString)
 
-     '''
-     BodyPattern = '<span id=\"text110\">(.*)?<\/span>'
-     Pattern = '<div class=zw_page1>.*?<a href=\"(.*?)\">'
-     body, nextLink = parseHtml(url, BodyPattern, UrlPattern)
-     while nextLink !='':
-         body, nextLink = parseHtml(nextLink, BodyPattern, UrlPattern)
-         print(body)
-     '''
