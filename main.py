@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import urllib.request
 from urllib import error, parse
-import string, re, configparser, os
+import string, re, configparser, os, sys
 
 
 class RegParser():
@@ -48,11 +48,14 @@ class RegParser():
         print(nextLink)
         return body, nextLink
 if __name__ == "__main__":
-     baseUrl = 'http://www.jokeji.cn/'
-     myRegParser = RegParser(baseUrl, 3)
+     #baseUrl = 'http://www.jokeji.cn/'
+     baseUrl = sys.argv[1]
+     count = int(sys.argv[2])
+     myRegParser = RegParser(baseUrl, count)
      bodyString, nextLink = myRegParser.parseHtml()
      myRegParser.strToWrite.append(bodyString)
-     while(nextLink!=''):
+     while(nextLink!='' and count>0):
+         count-=1
          myRegParser.url = urllib.parse.quote(nextLink, safe=string.printable)
          bodyString, nextLink = myRegParser.parseHtml()
          myRegParser.strToWrite.append(bodyString)
