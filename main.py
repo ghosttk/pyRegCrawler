@@ -13,7 +13,7 @@ class RegParser():
         self.cp = configparser.ConfigParser()
         curr_dir = os.path.dirname(os.path.realpath(__file__))
         config_file = curr_dir + os.sep + "params.conf"
-        cp = configparser.ConfigParser()
+        self.cp = configparser.ConfigParser()
         self.cp.read(config_file)
         urlToQoute = self.cp.get(self.baseUrl, 'url')
         self.url = urllib.parse.quote(urlToQoute, safe=string.printable)
