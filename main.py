@@ -17,18 +17,22 @@ class RegParser():
         self.url = urllib.parse.quote(urlToQoute, safe=string.printable)
         self.BodyPattern = self.cp.get(self.baseUrl, 'BodyPattern')
         self.UrlPattern = self.cp.get(self.baseUrl, 'UrlPattern')
+        self.trunkPattern = self.cp.get(self.baseUrl, 'trunkPattern')
     def parseBaseUrl(self, url):
         baseUrl = re.match('https?://.*?/', url).group()
         return baseUrl
+    def fmtBodyString(self, strBody):
+        result = re.sub('<.*>', '', strBody)
+        return result
     def parseHtml(self):
         try:
             res = urllib.request.urlopen(self.url)
         except urllib.error.URLError as e:
             print(e)
         Content = res.read().decode('gb2312', 'ignore')
-        #print(Content)
-        body = re.findall(self.BodyPattern, Content, re.S)
-        body = re.findall('[\u4e00-\u9fa5]+', body[0])
+        body = re.findall(self.BodyPattern, Content, re.S)[0]
+        body = self.fmtBodyString(body)
+        #body = re.findall('[\u4e00-\u9fa5]+', body[0])
         nextLink = re.search(self.UrlPattern, Content, re.S).group(1)
         if nextLink != '':
             nextLink = re.sub('\.\./\.\./', '',  nextLink)
@@ -37,7 +41,8 @@ class RegParser():
 if __name__ == "__main__":
      baseUrl = 'http://www.jokeji.cn/'
      myRegParser = RegParser(baseUrl, 3)
-     print(myRegParser.parseHtml())
+     bodyString, nextUrl = myRegParser.parseHtml()
+     print(bodyString)
      '''
      BodyPattern = '<span id=\"text110\">(.*)?<\/span>'
      Pattern = '<div class=zw_page1>.*?<a href=\"(.*?)\">'
