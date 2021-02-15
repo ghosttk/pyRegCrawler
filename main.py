@@ -7,9 +7,9 @@ import string, re, configparser, os
 class RegParser():
     def __init__(self, baseUrl, count):
         self.baseUrl = baseUrl
+        self.fo = open(baseUrl, 'a+')
         self.count =count
         self.strToWrite = []
-        self.fo = open('strbodys.txt', 'a+')
         self.cp = configparser.ConfigParser()
         curr_dir = os.path.dirname(os.path.realpath(__file__))
         config_file = curr_dir + os.sep + "params.conf"
@@ -24,12 +24,12 @@ class RegParser():
          self.cp.set(self.baseUrl, 'url', self.nextLink)
          self.fo.writelines(self.strToWrite)
          self.fo.close()
-         print('deleted')
+         self.cp.set(self.baseUrl, 'url', self.nextLink)
     def parseBaseUrl(self, url):
         baseUrl = re.match('https?://.*?/', url).group()
         return baseUrl
     def fmtBodyString(self, strBody):
-        result = re.sub('<.*?>', '', strBody)
+        result = re.sub(self.trunkPattern, '', strBody)
         return result
     def parseHtml(self):
         try:
@@ -38,7 +38,7 @@ class RegParser():
             print(e)
         Content = res.read().decode('gb2312', 'ignore')
         body = re.findall(self.BodyPattern, Content, re.S)[0]
-        #body = self.fmtBodyString(body)
+        body = self.fmtBodyString(body)
         #body = re.findall('[\u4e00-\u9fa5]+', body[0])
         nextLink = re.search(self.UrlPattern, Content, re.S).group(1)
         if nextLink != '':
