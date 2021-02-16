@@ -2,6 +2,7 @@
 import urllib.request
 from urllib import error, parse
 import string, re, configparser, os, sys
+import sqlite3
 
 
 class RegParser():
@@ -9,6 +10,12 @@ class RegParser():
         self.baseUrl = baseUrl
         self.count =count
         self.strToWrite = []
+        self.conn = sqlite3.connect('conf.db')
+        self.cur = self.conn.cursor()
+        
+        #self.cur.execute('CREATE TABLE PARAM (ID INT PRIMARY KEY NOT NULL,BASE TEXT  NOT NULL,  URL TEXT NOT NULL, BODYPATTERN TEXT NOT NULL, URLPATTERN TEXT  NOT NULL, TRUNKPATTERN TEXT NOT NULL);')
+        self.conn.commit()
+
         self.cp = configparser.ConfigParser()
         curr_dir = os.path.dirname(os.path.realpath(__file__))
         config_file = curr_dir + os.sep + "params.conf"
@@ -16,15 +23,21 @@ class RegParser():
         urlToQoute = self.cp.get(self.baseUrl, 'url')
         filename = re.search('\/(\d+)\.htm', urlToQoute).group(1)
         self.fo = open(filename+'.txt', 'a+')
-        self.url = urllib.parse.quote(urlToQoute, safe=string.printable)
+       # self.url = urllib.parse.quote(urlToQoute, safe=string.printable)
         self.BodyPattern = self.cp.get(self.baseUrl, 'BodyPattern')
         self.UrlPattern = self.cp.get(self.baseUrl, 'UrlPattern')
         self.trunkPattern = self.cp.get(self.baseUrl, 'trunkPattern')
-        self.nextLink = self.cp.get(self.baseUrl, 'url')
+        self.url = self.cp.get(self.baseUrl, 'url')
     def __del__(self):
+        print(self.BodyPattern)
+        
         self.fo.writelines(self.strToWrite)
         self.fo.close()
-        self.cp.set(self.baseUrl, 'url', self.nextLink)
+        self.cp.set(self.baseUrl, 'url', self.nextLink)        
+        
+        self.cur.execute('INSERT INTO PARAM VALUES (?,?,?,?,?,?)', (1,self.baseUrl,self.url,self.BodyPattern,self.UrlPattern,self.trunkPattern))
+        self.conn.commit()
+        self.conn.close()
     def parseBaseUrl(self, url):
         baseUrl = re.match('https?://.*?/', url).group()
         return baseUrl
@@ -52,8 +65,7 @@ if __name__ == "__main__":
      baseUrl = sys.argv[1]
      count = int(sys.argv[2])
      myRegParser = RegParser(baseUrl, count)
-     bodyString, nextLink = myRegParser.parseHtml()
-     myRegParser.strToWrite.append(bodyString)
+     nextLink = myRegParser.url
      while(nextLink!='' and count>0):
          count-=1
          myRegParser.url = urllib.parse.quote(nextLink, safe=string.printable)
