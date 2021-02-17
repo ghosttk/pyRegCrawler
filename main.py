@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import urllib.request
 from urllib import error, parse
-import string, re, configparser, os, sys
+import string, re,  os, sys
 import sqlite3
-
 
 class RegParser():
     def __init__(self, baseUrl, count):
@@ -38,6 +37,8 @@ class RegParser():
         self.fo.close()
         
         #self.cur.execute('INSERT INTO PARAM VALUES (?,?,?,?,?,?)', (1,self.baseUrl,self.url,self.BodyPattern,self.UrlPattern,self.trunkPattern))
+        print('update ...'+self.url)
+        self.cur.execute('update param set url=? where base=?',(self.url, self.baseUrl))
         self.conn.commit()
         self.conn.close()
     def parseBaseUrl(self, url):
@@ -47,6 +48,7 @@ class RegParser():
         result = re.sub(self.trunkPattern, '', strBody)
         return result
     def parseHtml(self):
+        self.url = urllib.parse.quote(self.url, safe=string.printable)
         try:
             res = urllib.request.urlopen(self.url)
         except urllib.error.URLError as e:
@@ -59,18 +61,16 @@ class RegParser():
         if nextLink != '':
             nextLink = re.sub('\.\./\.\./', '',  nextLink)
             nextLink = self.baseUrl + nextLink
-        self.nextLink = nextLink
-        print(nextLink)
+        self.url = nextLink
         return body, nextLink
 if __name__ == "__main__":
      #baseUrl = 'http://www.jokeji.cn/'
      baseUrl = sys.argv[1]
      count = int(sys.argv[2])
      myRegParser = RegParser(baseUrl, count)
-     nextLink = myRegParser.url
-     while(nextLink!='' and count>0):
-         count-=1
-         myRegParser.url = urllib.parse.quote(nextLink, safe=string.printable)
+     while(myRegParser.url !='' and count>0):
+         print('connecting...'+myRegParser.url)
          bodyString, nextLink = myRegParser.parseHtml()
          myRegParser.strToWrite.append(bodyString)
+         count-=1
 
