@@ -12,30 +12,32 @@ class RegParser():
         self.strToWrite = []
         self.conn = sqlite3.connect('conf.db')
         self.cur = self.conn.cursor()
-        
-        #self.cur.execute('CREATE TABLE PARAM (ID INT PRIMARY KEY NOT NULL,BASE TEXT  NOT NULL,  URL TEXT NOT NULL, BODYPATTERN TEXT NOT NULL, URLPATTERN TEXT  NOT NULL, TRUNKPATTERN TEXT NOT NULL);')
+        self.cur.execute('select * from param where base=?', (baseUrl,))
+        record = self.cur.fetchone()
+        self.url = record[2]
+        self.BodyPattern = record[3]
+        self.UrlPattern = record[4]
+        self.trunkPattern = record[5]
+        ''' 
+        self.cur.execute('CREATE TABLE PARAM (ID INT PRIMARY KEY NOT NULL,BASE TEXT  NOT NULL,  URL TEXT NOT NULL, BODYPATTERN TEXT NOT NULL, URLPATTERN TEXT  NOT NULL, TRUNKPATTERN TEXT NOT NULL);')
         self.conn.commit()
-
-        self.cp = configparser.ConfigParser()
-        curr_dir = os.path.dirname(os.path.realpath(__file__))
         config_file = curr_dir + os.sep + "params.conf"
         self.cp.read(config_file)
+        self.cp = configparser.ConfigParser()
         urlToQoute = self.cp.get(self.baseUrl, 'url')
-        filename = re.search('\/(\d+)\.htm', urlToQoute).group(1)
-        self.fo = open(filename+'.txt', 'a+')
-       # self.url = urllib.parse.quote(urlToQoute, safe=string.printable)
         self.BodyPattern = self.cp.get(self.baseUrl, 'BodyPattern')
         self.UrlPattern = self.cp.get(self.baseUrl, 'UrlPattern')
         self.trunkPattern = self.cp.get(self.baseUrl, 'trunkPattern')
         self.url = self.cp.get(self.baseUrl, 'url')
+        '''
+        curr_dir = os.path.dirname(os.path.realpath(__file__))
+        filename = re.search('\/(\d+)\.htm', self.url).group(1)
+        self.fo = open(filename+'.txt', 'a+')
     def __del__(self):
-        print(self.BodyPattern)
-        
         self.fo.writelines(self.strToWrite)
         self.fo.close()
-        self.cp.set(self.baseUrl, 'url', self.nextLink)        
         
-        self.cur.execute('INSERT INTO PARAM VALUES (?,?,?,?,?,?)', (1,self.baseUrl,self.url,self.BodyPattern,self.UrlPattern,self.trunkPattern))
+        #self.cur.execute('INSERT INTO PARAM VALUES (?,?,?,?,?,?)', (1,self.baseUrl,self.url,self.BodyPattern,self.UrlPattern,self.trunkPattern))
         self.conn.commit()
         self.conn.close()
     def parseBaseUrl(self, url):
