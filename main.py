@@ -17,18 +17,6 @@ class RegParser():
         self.BodyPattern = record[3]
         self.UrlPattern = record[4]
         self.trunkPattern = record[5]
-        ''' 
-        self.cur.execute('CREATE TABLE PARAM (ID INT PRIMARY KEY NOT NULL,BASE TEXT  NOT NULL,  URL TEXT NOT NULL, BODYPATTERN TEXT NOT NULL, URLPATTERN TEXT  NOT NULL, TRUNKPATTERN TEXT NOT NULL);')
-        self.conn.commit()
-        config_file = curr_dir + os.sep + "params.conf"
-        self.cp.read(config_file)
-        self.cp = configparser.ConfigParser()
-        urlToQoute = self.cp.get(self.baseUrl, 'url')
-        self.BodyPattern = self.cp.get(self.baseUrl, 'BodyPattern')
-        self.UrlPattern = self.cp.get(self.baseUrl, 'UrlPattern')
-        self.trunkPattern = self.cp.get(self.baseUrl, 'trunkPattern')
-        self.url = self.cp.get(self.baseUrl, 'url')
-        '''
         curr_dir = os.path.dirname(os.path.realpath(__file__))
         filename = re.search('\/(\d+)\.htm', self.url).group(1)
         self.fo = open(filename+'.txt', 'a+')
