@@ -5,13 +5,15 @@ import string, re,  os, sys
 import sqlite3
 
 class RegParser():
-    def __init__(self, baseUrl, count):
-        self.baseUrl = baseUrl
+    def __init__(self, Url, count):
+        self.baseUrl, pUrl = self.getBaseUrl(Url)
+        if pUrl:
+            print(pUrl)
         self.count =count
         self.strToWrite = []
         self.conn = sqlite3.connect('conf.db')
         self.cur = self.conn.cursor()
-        self.cur.execute('select * from param where base=?', (baseUrl,))
+        self.cur.execute('select * from param where base=?', (self.baseUrl,))
         record = self.cur.fetchone()
         self.url = record[2]
         self.BodyPattern = record[3]
@@ -20,6 +22,10 @@ class RegParser():
         curr_dir = os.path.dirname(os.path.realpath(__file__))
         filename = re.search('\/(\d+)\.htm', self.url).group(1)
         self.fo = open(filename+'.txt', 'a+')
+    def getBaseUrl(self, url):
+        basePattern = '(https?://.*?/)(.*)'
+        res = re.search(basePattern, url)
+        return res.group(1), res.group(2)
     def __del__(self):
         self.fo.writelines(self.strToWrite)
         self.fo.close()
