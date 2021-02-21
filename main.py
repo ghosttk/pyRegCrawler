@@ -9,7 +9,8 @@ class RegParser():
         self.baseUrl, pUrl = self.getBaseUrl(Url)
         self.count =count
         self.strToWrite = []
-        self.conn = sqlite3.connect('conf.db')
+        db_name = 'conf.db'
+        self.conn = sqlite3.connect(db_name)
         self.cur = self.conn.cursor()
         self.cur.execute('select * from param where base=?', (self.baseUrl,))
         record = self.cur.fetchone()
@@ -48,12 +49,12 @@ class RegParser():
         except urllib.error.URLError as e:
             print(e)
         Content = res.read().decode('gb2312', 'ignore')
-        body = re.findall(self.BodyPattern, Content, re.S)[0]
-        body = self.fmtBodyString(body)
+        body = re.findall(self.BodyPattern, Content, re.S)
+        body = list(map(lambda x:self.fmtBodyString(x), body))
         #body = re.findall('[\u4e00-\u9fa5]+', body[0])
         nextLink = re.search(self.UrlPattern, Content, re.S).group(1)
         if nextLink != '':
-            nextLink = re.sub('\.\./\.\./', '',  nextLink)
+            nextLink = re.sub('^(\.\./)+', '',  nextLink)
             nextLink = self.baseUrl + nextLink
         self.url = nextLink
         return body, nextLink
@@ -65,6 +66,6 @@ if __name__ == "__main__":
      while(myRegParser.url !='' and count>0):
          print('connecting...'+myRegParser.url)
          bodyString, nextLink = myRegParser.parseHtml()
-         myRegParser.strToWrite.append(bodyString)
+         myRegParser.strToWrite.append('\n'.join(bodyString))
          count-=1
 
