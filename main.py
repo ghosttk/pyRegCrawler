@@ -7,15 +7,16 @@ import sqlite3
 class RegParser():
     def __init__(self, Url, count):
         self.baseUrl, pUrl = self.getBaseUrl(Url)
-        if pUrl:
-            print(pUrl)
         self.count =count
         self.strToWrite = []
         self.conn = sqlite3.connect('conf.db')
         self.cur = self.conn.cursor()
         self.cur.execute('select * from param where base=?', (self.baseUrl,))
         record = self.cur.fetchone()
-        self.url = record[2]
+        if pUrl:
+            self.url = Url
+        else:
+            self.url = record[2]
         self.BodyPattern = record[3]
         self.UrlPattern = record[4]
         self.trunkPattern = record[5]
@@ -29,7 +30,6 @@ class RegParser():
     def __del__(self):
         self.fo.writelines(self.strToWrite)
         self.fo.close()
-        
         #self.cur.execute('INSERT INTO PARAM VALUES (?,?,?,?,?,?)', (1,self.baseUrl,self.url,self.BodyPattern,self.UrlPattern,self.trunkPattern))
         print('update ...'+self.url)
         self.cur.execute('update param set url=? where base=?',(self.url, self.baseUrl))
